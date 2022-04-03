@@ -3,7 +3,8 @@ version: '3'
 
 services:                                   
   db:  
-    image: guilhermengs/docker-desafio-mysql-node-nginx:1.0                    
+    build:
+        context: ./mysql
     command: --innodb-use-native-aio=0      
     container_name: db                      
     restart: always                         
@@ -14,13 +15,14 @@ services:
         - nginx-node-network                
 
   app:
-    image: guilhermengs/docker-desafio-node-mysql-nginx:1.0
-    container_name: app
-    command: npm start
+    build:
+        context: ./node
+    container_name: app    
     networks:
         - nginx-node-network
     volumes:  # volumes
-        - ./node:/usr/src/app
+        - ./node:/usr/src/app/
+        - exclude:/usr/src/app/node_modules/
     tty: true
     ports:  # configura a porta
         - "3000:3000"
@@ -29,7 +31,8 @@ services:
         - db
 
   proxy:
-    image: guilhermengs/docker-desafio-nginx-node-mysql:1.0
+    build:
+        context: ./nginx
     container_name: proxy
     networks:
         - nginx-node-network
@@ -42,3 +45,6 @@ services:
 networks:                                   # configuracao das redes
   nginx-node-network:                       # nome da rede
     driver: bridge                          #tipo da rede
+
+volumes:
+    exclude:
